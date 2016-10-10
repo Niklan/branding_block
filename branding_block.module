@@ -1,0 +1,123 @@
+<?php
+
+/**
+ * @file
+ * Main file for hooks.
+ */
+
+/**
+ * Implements hook_block_info().
+ */
+function branding_block_block_info() {
+  $blocks['branding'] = array(
+    'info' => t('Site branding'),
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function branding_block_block_configure($delta = '') {
+  $form = array();
+
+  if ($delta == 'branding') {
+    $current_theme = variable_get('theme_default');
+
+    $form['use_site_logo'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Site logo'),
+      '#description' => t('Defined on the <a href="@appearance">Appearance Settings</a> or <a href="@theme">Theme Settings</a> page.', array(
+        '@appearance' => url('admin/appearance'),
+        '@theme' => url('admin/appearance/settings/' . $current_theme),
+      )),
+      '#default_value' => variable_get('branding_block_use_site_logo', TRUE),
+    );
+
+    $form['use_site_name'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Site name'),
+      '#description' => t('Defined on the <a href="@information">Site Information</a> page.', array(
+        '@information' => url('admin/config/system/site-information'),
+      )),
+      '#default_value' => variable_get('branding_block_use_site_name', FALSE),
+    );
+
+    $form['use_site_slogan'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Site slogan'),
+      '#description' => t('Defined on the <a href="@information">Site Information</a> page.', array(
+        '@information' => url('admin/config/system/site-information'),
+      )),
+      '#default_value' => variable_get('branding_block_use_site_slogan', FALSE),
+    );
+  }
+
+  return $form;
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function branding_block_block_save($delta = '', $edit = array()) {
+  if ($delta == 'branding') {
+    variable_set('branding_block_use_site_logo', $edit['use_site_logo']);
+    variable_set('branding_block_use_site_name', $edit['use_site_name']);
+    variable_set('branding_block_use_site_slogan', $edit['use_site_slogan']);
+  }
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function branding_block_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'branding':
+      $block['content'] = array(
+        '#theme' => 'branding_block',
+      );
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function branding_block_theme($existing, $type, $theme, $path) {
+  return array(
+    'branding_block' => array(
+      'template' => 'branding-block',
+      'path' => drupal_get_path('module', 'branding_block') . '/templates',
+      'render element' => 'element',
+    ),
+  );
+}
+
+/**
+ * Implements template_preprocess_theme().
+ */
+function template_preprocess_branding_block(&$variables) {
+  $use_site_logo = variable_get('branding_block_use_site_logo', TRUE);
+  $use_site_name = variable_get('branding_block_use_site_name', FALSE);
+  $use_site_slogan = variable_get('branding_block_use_site_slogan', FALSE);
+  $variables['logo'] = NULL;
+  $variables['site_name'] = NULL;
+  $variables['site_slogan'] = NULL;
+  $variables['front_page'] = url(variable_get('site_frontpage'));
+
+  if ($use_site_logo) {
+    $variables['logo'] = theme_get_setting('logo');
+  }
+
+  if ($use_site_name) {
+    $variables['site_name'] = variable_get('site_name', '');
+  }
+
+  if ($use_site_slogan) {
+    $variables['site_slogan'] = variable_get('site_slogan', '');
+  }
+}

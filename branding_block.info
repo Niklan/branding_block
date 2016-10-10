@@ -1,0 +1,4 @@
+name = Branding block
+description = Drupal 8 like branding block
+core = 7.x
+version = 1.x
